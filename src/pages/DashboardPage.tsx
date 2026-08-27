@@ -111,10 +111,10 @@ export const DashboardPage: React.FC = () => {
         .eq('client_id', user.id)
         .order('appointment_date', { ascending: false });
 
-      if (appData && appData.length > 0) {
+      if (appData) {
         setAppointments(appData as unknown as AppointmentWithDetails[]);
       } else {
-        setAppointments(MOCK_APPOINTMENTS.slice(0, 3));
+        setAppointments([]);
       }
 
       // 2. Récupérer les récompenses
@@ -137,16 +137,16 @@ export const DashboardPage: React.FC = () => {
         .eq('client_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (txData && txData.length > 0) {
+      if (txData) {
         setLoyaltyTransactions(txData as unknown as LoyaltyTransaction[]);
       } else {
-        setLoyaltyTransactions(MOCK_LOYALTY_TRANSACTIONS);
+        setLoyaltyTransactions([]);
       }
     } catch (err) {
       console.error(err);
-      setAppointments(MOCK_APPOINTMENTS.slice(0, 3));
+      setAppointments([]);
       setRewards(MOCK_REWARDS);
-      setLoyaltyTransactions(MOCK_LOYALTY_TRANSACTIONS);
+      setLoyaltyTransactions([]);
     } finally {
       setLoading(false);
     }

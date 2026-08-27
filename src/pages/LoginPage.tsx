@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { useAuth } from '../hooks/useAuth';
-import { Scissors, AlertCircle, Check, Shield, User, KeyRound } from 'lucide-react';
+import { Scissors, AlertCircle, Check } from 'lucide-react';
 import { authLoginSchema, authRegisterSchema } from '../lib/validations';
 
 export const LoginPage: React.FC = () => {
-  const { loginAsDemo } = useAuth();
   const [isRegister, setIsRegister] = useState<boolean>(false);
-  const [email, setEmail] = useState<string>('cindytchamabekamaha@gmail.com');
-  const [password, setPassword] = useState<string>('Admin1234!');
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
   const [fullName, setFullName] = useState<string>('');
   const [phone, setPhone] = useState<string>('');
   const [address, setAddress] = useState<string>('');
@@ -21,18 +19,6 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const from = (location.state as any)?.from?.pathname || '/dashboard';
-
-  const handleQuickDemoLogin = (role: 'admin' | 'staff' | 'client') => {
-    loginAsDemo(role);
-    setSuccessMsg(`Connexion réussie en tant que ${role === 'admin' ? 'Administrateur' : role === 'staff' ? 'Membre Staff' : 'Client'} !`);
-    setTimeout(() => {
-      if (role === 'admin') {
-        navigate('/admin', { replace: true });
-      } else {
-        navigate('/dashboard', { replace: true });
-      }
-    }, 400);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,7 +59,7 @@ export const LoginPage: React.FC = () => {
         if (error) {
           setErrorMsg(error.message);
         } else {
-          setSuccessMsg('Compte créé avec succès ! Redirection vers votre espace client...');
+          setSuccessMsg('Compte créé avec succès ! Vous pouvez maintenant vous connecter.');
           setTimeout(() => {
             navigate(from, { replace: true });
           }, 1000);
@@ -93,9 +79,11 @@ export const LoginPage: React.FC = () => {
         });
 
         if (error) {
-          setErrorMsg(error.message === 'Invalid login credentials' 
-            ? 'Email ou mot de passe incorrect. Vous pouvez créer un compte ou utiliser le bouton Test 1-Clic ci-dessous.' 
-            : error.message);
+          setErrorMsg(
+            error.message === 'Invalid login credentials'
+              ? 'Email ou mot de passe incorrect. Vérifiez vos identifiants ou créez un compte.'
+              : error.message
+          );
         } else {
           try {
             localStorage.removeItem('demo_user_role');
@@ -119,12 +107,12 @@ export const LoginPage: React.FC = () => {
             <Scissors className="w-6 h-6 rotate-45" />
           </div>
           <h1 className="text-2xl font-bold font-serif text-stone-900">
-            {isRegister ? 'Créer un compte client' : 'Espace Membre & Administration'}
+            {isRegister ? 'Créer un compte' : 'Espace Client & Gestion'}
           </h1>
           <p className="text-xs text-stone-600 font-medium">
             {isRegister
-              ? 'Renseignez vos coordonnées pour faciliter vos rendez-vous'
-              : 'Connectez-vous pour accéder au tableau de bord ou à vos rendez-vous'}
+              ? 'Renseignez vos coordonnées pour gérer et suivre vos réservations'
+              : 'Connectez-vous pour accéder à vos rendez-vous et vos privilèges'}
           </p>
         </div>
 
@@ -168,19 +156,19 @@ export const LoginPage: React.FC = () => {
           {isRegister && (
             <>
               <div>
-                <label className="block font-bold text-stone-800 mb-1">Nom complet</label>
+                <label className="block font-bold text-stone-800 mb-1">Nom complet *</label>
                 <input
                   type="text"
                   required
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Ex: Chiara Bellini"
+                  placeholder="Ex: Céline Robert"
                   className="w-full px-3.5 py-2.5 rounded-xl border-2 border-stone-300 focus:ring-2 focus:ring-stone-900 focus:outline-none text-sm text-stone-900 bg-stone-50/50"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-stone-800 mb-1">Téléphone</label>
+                <label className="block font-bold text-stone-800 mb-1">Téléphone *</label>
                 <input
                   type="tel"
                   required
@@ -192,13 +180,12 @@ export const LoginPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-stone-800 mb-1">Adresse complète</label>
+                <label className="block font-bold text-stone-800 mb-1">Adresse (pour prestation à domicile)</label>
                 <input
                   type="text"
-                  required
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                  placeholder="Ex: Via Roma 12, Pavia"
+                  placeholder="Ex: Via Francana 10, Pavia"
                   className="w-full px-3.5 py-2.5 rounded-xl border-2 border-stone-300 focus:ring-2 focus:ring-stone-900 focus:outline-none text-sm text-stone-900 bg-stone-50/50"
                 />
               </div>
@@ -206,19 +193,19 @@ export const LoginPage: React.FC = () => {
           )}
 
           <div>
-            <label className="block font-bold text-stone-800 mb-1">Adresse Email</label>
+            <label className="block font-bold text-stone-800 mb-1">Adresse Email *</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="cindytchamabekamaha@gmail.com"
+              placeholder="votre.email@exemple.com"
               className="w-full px-3.5 py-2.5 rounded-xl border-2 border-stone-300 focus:ring-2 focus:ring-stone-900 focus:outline-none text-sm text-stone-900 bg-stone-50/50"
             />
           </div>
 
           <div>
-            <label className="block font-bold text-stone-800 mb-1">Mot de passe</label>
+            <label className="block font-bold text-stone-800 mb-1">Mot de passe *</label>
             <input
               type="password"
               required
@@ -243,61 +230,6 @@ export const LoginPage: React.FC = () => {
             )}
           </button>
         </form>
-
-        {/* ========================================================================= */}
-        {/* ENCART IDENTIFIANTS DE TEST & CONNEXION RAPIDE 1-CLIC */}
-        {/* ========================================================================= */}
-        <div className="pt-4 border-t-2 border-stone-100 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-stone-700 uppercase tracking-wider flex items-center gap-1">
-              <KeyRound className="w-3.5 h-3.5 text-amber-700" />
-              Accès Rapide Test & Démo
-            </span>
-            <span className="text-[10px] bg-amber-100 text-amber-950 font-bold px-2 py-0.5 rounded-full border border-amber-300">
-              1-Clic
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => handleQuickDemoLogin('admin')}
-              className="p-3 rounded-xl border-2 border-stone-900 bg-stone-900 text-white hover:bg-stone-800 transition-all text-left flex flex-col justify-between shadow-sm group"
-            >
-              <div className="flex items-center justify-between w-full">
-                <span className="font-bold text-xs text-amber-400 flex items-center gap-1">
-                  <Shield className="w-3.5 h-3.5" />
-                  Admin
-                </span>
-                <span className="text-[10px] bg-amber-500 text-stone-950 px-1.5 py-0.5 rounded font-bold">
-                  Cindy
-                </span>
-              </div>
-              <span className="text-[10px] text-stone-300 mt-1 truncate">
-                cindytchamabekamaha@gmail.com
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleQuickDemoLogin('client')}
-              className="p-3 rounded-xl border-2 border-stone-200 bg-stone-50 hover:bg-stone-100 transition-all text-left flex flex-col justify-between shadow-sm"
-            >
-              <div className="flex items-center justify-between w-full">
-                <span className="font-bold text-xs text-stone-900 flex items-center gap-1">
-                  <User className="w-3.5 h-3.5 text-amber-700" />
-                  Client
-                </span>
-                <span className="text-[10px] bg-stone-200 text-stone-700 px-1.5 py-0.5 rounded font-bold">
-                  Chiara
-                </span>
-              </div>
-              <span className="text-[10px] text-stone-500 mt-1 truncate">
-                chiara.bellini@yahoo.it
-              </span>
-            </button>
-          </div>
-        </div>
 
       </div>
     </div>

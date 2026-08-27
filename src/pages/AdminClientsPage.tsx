@@ -52,14 +52,14 @@ export const AdminClientsPage: React.FC = () => {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         setClients(data as unknown as Profile[]);
       } else {
-        setClients(MOCK_CLIENTS);
+        setClients([]);
       }
     } catch (err) {
       console.error('Erreur chargement clients :', err);
-      setClients(MOCK_CLIENTS);
+      setClients([]);
     } finally {
       setLoading(false);
     }
@@ -86,11 +86,10 @@ export const AdminClientsPage: React.FC = () => {
         .eq('client_id', client.id)
         .order('appointment_date', { ascending: false });
 
-      if (appData && appData.length > 0) {
+      if (appData) {
         setClientAppointments(appData as unknown as AppointmentWithDetails[]);
       } else {
-        const matchingApps = MOCK_APPOINTMENTS.filter((a) => a.client_id === client.id);
-        setClientAppointments(matchingApps.length > 0 ? matchingApps : [MOCK_APPOINTMENTS[0]]);
+        setClientAppointments([]);
       }
 
       // 2. Transactions fidélité
@@ -100,18 +99,15 @@ export const AdminClientsPage: React.FC = () => {
         .eq('client_id', client.id)
         .order('created_at', { ascending: false });
 
-      if (txData && txData.length > 0) {
+      if (txData) {
         setClientTransactions(txData as unknown as LoyaltyTransaction[]);
       } else {
-        const matchingTxs = MOCK_LOYALTY_TRANSACTIONS.filter((t) => t.client_id === client.id);
-        setClientTransactions(matchingTxs.length > 0 ? matchingTxs : [MOCK_LOYALTY_TRANSACTIONS[0]]);
+        setClientTransactions([]);
       }
     } catch (err) {
       console.error('Erreur chargement fiche client :', err);
-      const matchingApps = MOCK_APPOINTMENTS.filter((a) => a.client_id === client.id);
-      setClientAppointments(matchingApps.length > 0 ? matchingApps : [MOCK_APPOINTMENTS[0]]);
-      const matchingTxs = MOCK_LOYALTY_TRANSACTIONS.filter((t) => t.client_id === client.id);
-      setClientTransactions(matchingTxs.length > 0 ? matchingTxs : [MOCK_LOYALTY_TRANSACTIONS[0]]);
+      setClientAppointments([]);
+      setClientTransactions([]);
     } finally {
       setLoadingClientDetails(false);
     }

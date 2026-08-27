@@ -95,10 +95,10 @@ export const AdminLoyaltyPage: React.FC = () => {
         .select('*')
         .order('loyalty_points', { ascending: false });
 
-      if (clientsData && clientsData.length > 0) {
+      if (clientsData) {
         setClients(clientsData as unknown as Profile[]);
       } else {
-        setClients(MOCK_CLIENTS);
+        setClients([]);
       }
 
       // 3. Transactions
@@ -107,16 +107,16 @@ export const AdminLoyaltyPage: React.FC = () => {
         .select('*, profiles (*)')
         .order('created_at', { ascending: false });
 
-      if (txData && txData.length > 0) {
+      if (txData) {
         setTransactions(txData as unknown as TransactionWithProfile[]);
       } else {
-        setTransactions(MOCK_LOYALTY_TRANSACTIONS);
+        setTransactions([]);
       }
     } catch (err) {
       console.error('Erreur chargement fidélité :', err);
       setRewards(MOCK_REWARDS);
-      setClients(MOCK_CLIENTS);
-      setTransactions(MOCK_LOYALTY_TRANSACTIONS);
+      setClients([]);
+      setTransactions([]);
     } finally {
       setLoading(false);
     }

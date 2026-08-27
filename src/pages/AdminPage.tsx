@@ -85,14 +85,14 @@ export const AdminPage: React.FC = () => {
         `)
         .order('appointment_date', { ascending: false });
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         setAppointments(data as unknown as AppointmentWithDetails[]);
       } else {
-        setAppointments(MOCK_APPOINTMENTS);
+        setAppointments([]);
       }
     } catch (err) {
       console.error('Erreur de récupération des données admin :', err);
-      setAppointments(MOCK_APPOINTMENTS);
+      setAppointments([]);
     } finally {
       setLoading(false);
     }

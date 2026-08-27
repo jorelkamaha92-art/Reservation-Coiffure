@@ -106,10 +106,10 @@ export const AdminAppointmentsPage: React.FC = () => {
         `)
         .order('appointment_date', { ascending: false });
 
-      if (!appError && appData && appData.length > 0) {
+      if (!appError && appData) {
         setAppointments(appData as unknown as AppointmentWithDetails[]);
       } else {
-        setAppointments(MOCK_APPOINTMENTS);
+        setAppointments([]);
       }
 
       // 2. Services
@@ -140,18 +140,18 @@ export const AdminAppointmentsPage: React.FC = () => {
         .from('profiles')
         .select('*')
         .order('full_name');
-      if (cltData && cltData.length > 0) {
+      if (cltData) {
         setClients(cltData as unknown as Profile[]);
       } else {
-        setClients(MOCK_CLIENTS);
+        setClients([]);
       }
 
     } catch (err) {
       console.error('Erreur chargement planning admin :', err);
-      setAppointments(MOCK_APPOINTMENTS);
+      setAppointments([]);
       setServices(MOCK_SERVICES);
       setStaffList(MOCK_STAFF);
-      setClients(MOCK_CLIENTS);
+      setClients([]);
     } finally {
       setLoading(false);
     }

@@ -92,14 +92,14 @@ export const AdminAvailabilityPage: React.FC = () => {
         .select('*')
         .order('date', { ascending: true });
 
-      if (!blockError && blockData && blockData.length > 0) {
+      if (!blockError && blockData) {
         setBlockedDates(blockData as unknown as BlockedDate[]);
       } else {
-        setBlockedDates(MOCK_BLOCKED_DATES);
+        setBlockedDates([]);
       }
     } catch (err) {
       console.error('Erreur chargement planning :', err);
-      setBlockedDates(MOCK_BLOCKED_DATES);
+      setBlockedDates([]);
     } finally {
       setLoading(false);
     }
