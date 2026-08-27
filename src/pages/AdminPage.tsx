@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import type { AppointmentWithDetails, AppointmentStatus } from '../types';
 import { MOCK_APPOINTMENTS } from '../lib/mockData';
@@ -30,7 +30,9 @@ import {
   Scissors,
   Check,
   XCircle,
-  Sparkles
+  Sparkles,
+  CalendarRange,
+  Filter
 } from 'lucide-react';
 import { 
   format, 
@@ -38,6 +40,8 @@ import {
   isToday, 
   isThisWeek, 
   isThisMonth, 
+  isThisYear,
+  isAfter,
   parseISO 
 } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -57,10 +61,17 @@ ChartJS.register(
   Filler
 );
 
+type DatePreset = 'all' | 'today' | 'week' | 'month' | 'year' | 'custom';
+
 export const AdminPage: React.FC = () => {
   const [appointments, setAppointments] = useState<AppointmentWithDetails[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  // État du filtre de période pour les KPIs
+  const [datePreset, setDatePreset] = useState<DatePreset>('all');
+  const [customStartDate, setCustomStartDate] = useState<string>(format(subDays(new Date(), 30), 'yyyy-MM-dd'));
+  const [customEndDate, setCustomEndDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
 
   const fetchAdminData = async () => {
     setLoading(true);
@@ -111,11 +122,41 @@ export const AdminPage: React.FC = () => {
   };
 
   // =========================================================================
-  // 1. CALCUL DES KPIS
+  // 1. FILTRAGE DYNAMIQUE SELON LA PÉRIODE CHOISIE
   // =========================================================================
-  const totalAppointments = appointments.length;
+  const filteredAppointments = useMemo(() => {
+    return appointments.filter((a) => {
+      if (!a.appointment_date) return false;
+      try {
+        const d = parseISO(a.appointment_date);
+        if (datePreset === 'today') {
+          return isToday(d);
+        }
+        if (datePreset === 'week') {
+          return isThisWeek(d, { weekStartsOn: 1 }) || isAfter(d, subDays(new Date(), 7));
+        }
+        if (datePreset === 'month') {
+          return isThisMonth(d) || isAfter(d, subDays(new Date(), 30));
+        }
+        if (datePreset === 'year') {
+          return isThisYear(d);
+        }
+        if (datePreset === 'custom') {
+          return a.appointment_date >= customStartDate && a.appointment_date <= customEndDate;
+        }
+        return true; // 'all'
+      } catch {
+        return true;
+      }
+    });
+  }, [appointments, datePreset, customStartDate, customEndDate]);
 
-  // RDVs par période
+  // =========================================================================
+  // 2. CALCUL DES KPIS SUR LA PÉRIODE FILTRÉE
+  // =========================================================================
+  const totalAppointments = filteredAppointments.length;
+
+  // RDVs Aujourd'hui (indicateur absolu)
   const appointmentsToday = appointments.filter((a) => {
     try {
       return isToday(parseISO(a.appointment_date));
@@ -140,64 +181,59 @@ export const AdminPage: React.FC = () => {
     }
   }).length;
 
-  // Chiffre d'affaires calculé à partir des RDV 'completed'
-  const completedAppointments = appointments.filter((a) => a.status === 'completed');
+  // Chiffre d'affaires calculé sur les RDV 'completed' de la période sélectionnée
+  const completedAppointments = filteredAppointments.filter((a) => a.status === 'completed');
   const totalRevenue = completedAppointments.reduce((acc, curr) => acc + Number(curr.services?.price || 0), 0);
 
-  const revenueThisMonth = completedAppointments
-    .filter((a) => {
-      try {
-        return isThisMonth(parseISO(a.appointment_date));
-      } catch {
-        return false;
-      }
-    })
-    .reduce((acc, curr) => acc + Number(curr.services?.price || 0), 0);
+  // Panier moyen sur la sélection
+  const averageCart = completedAppointments.length > 0 ? totalRevenue / completedAppointments.length : 0;
 
-  const revenueThisWeek = completedAppointments
-    .filter((a) => {
-      try {
-        return isThisWeek(parseISO(a.appointment_date), { weekStartsOn: 1 });
-      } catch {
-        return false;
-      }
-    })
-    .reduce((acc, curr) => acc + Number(curr.services?.price || 0), 0);
-
-  // Panier moyen
-  const averageCart = completedAppointments.length > 0 ? totalRevenue / completedAppointments.length : 45;
-
-  // Statuts
-  const confirmedCount = appointments.filter((a) => a.status === 'confirmed').length;
-  const pendingCount = appointments.filter((a) => a.status === 'pending').length;
+  // Statuts sur la sélection
+  const confirmedCount = filteredAppointments.filter((a) => a.status === 'confirmed').length;
+  const pendingCount = filteredAppointments.filter((a) => a.status === 'pending').length;
   const completedCount = completedAppointments.length;
-  const cancelledCount = appointments.filter((a) => a.status === 'cancelled').length;
+  const cancelledCount = filteredAppointments.filter((a) => a.status === 'cancelled').length;
 
   // Taux de transformation / confirmation
   const validBookings = confirmedCount + completedCount;
-  const conversionRate = totalAppointments > 0 ? Math.round((validBookings / totalAppointments) * 100) : 88;
+  const conversionRate = totalAppointments > 0 ? Math.round((validBookings / totalAppointments) * 100) : 0;
+
+  // Libellé de la période active pour les cartes
+  const getPeriodLabel = () => {
+    switch (datePreset) {
+      case 'today': return "Aujourd'hui";
+      case 'week': return '7 derniers jours';
+      case 'month': return '30 derniers jours';
+      case 'year': return 'Cette année';
+      case 'custom': return `Du ${formatDateFr(customStartDate)} au ${formatDateFr(customEndDate)}`;
+      default: return 'Historique complet';
+    }
+  };
 
   // =========================================================================
-  // 2. DONNÉES DES 3 GRAPHIQUES (Chart.js)
+  // 3. DONNÉES DES 3 GRAPHIQUES (Chart.js)
   // =========================================================================
 
-  // Graphique 1 : Évolution des RDV sur 30 jours (Line Chart)
-  const last30Days = Array.from({ length: 30 }, (_, i) => {
-    const d = subDays(new Date(), 29 - i);
-    return format(d, 'yyyy-MM-dd');
-  });
+  // Graphique 1 : Évolution temporelle (Line Chart)
+  const timelineDays = useMemo(() => {
+    const numDays = datePreset === 'today' ? 1 : datePreset === 'week' ? 7 : 30;
+    return Array.from({ length: numDays }, (_, i) => {
+      const d = subDays(new Date(), numDays - 1 - i);
+      return format(d, 'yyyy-MM-dd');
+    });
+  }, [datePreset]);
 
-  const appointmentsPerDay = last30Days.map((dayStr) => {
-    return appointments.filter((a) => a.appointment_date === dayStr).length;
+  const appointmentsPerDay = timelineDays.map((dayStr) => {
+    return filteredAppointments.filter((a) => a.appointment_date === dayStr).length;
   });
 
   const lineChartData = {
-    labels: last30Days.map((d) => format(parseISO(d), 'dd MMM', { locale: fr })),
+    labels: timelineDays.map((d) => format(parseISO(d), 'dd MMM', { locale: fr })),
     datasets: [
       {
         label: 'Rendez-vous enregistrés',
-        data: appointmentsPerDay.some((c) => c > 0) ? appointmentsPerDay : [1, 2, 3, 2, 4, 3, 5, 4, 6, 5, 7, 6, 8, 7, 9, 8, 10, 8, 9, 11, 10, 12, 11, 13, 12, 14, 13, 15, 14, 16],
-        borderColor: '#d97706', // Ambre doré
+        data: appointmentsPerDay,
+        borderColor: '#d97706',
         backgroundColor: 'rgba(217, 119, 6, 0.12)',
         tension: 0.35,
         fill: true,
@@ -240,7 +276,7 @@ export const AdminPage: React.FC = () => {
     labels: ['Confirmés', 'En attente', 'Terminés', 'Annulés'],
     datasets: [
       {
-        data: totalAppointments > 0 ? [confirmedCount, pendingCount, completedCount, cancelledCount] : [8, 4, 15, 2],
+        data: totalAppointments > 0 ? [confirmedCount, pendingCount, completedCount, cancelledCount] : [0, 0, 0, 0],
         backgroundColor: ['#059669', '#d97706', '#2563eb', '#e11d48'],
         hoverBackgroundColor: ['#047857', '#b45309', '#1d4ed8', '#be123c'],
         borderWidth: 0,
@@ -265,10 +301,10 @@ export const AdminPage: React.FC = () => {
     },
   };
 
-  // Graphique 3 : Répartition par Service / Prestation (Bar Chart)
+  // Graphique 3 : Répartition par Prestation (Bar Chart)
   const serviceCounts: { [name: string]: number } = {};
-  appointments.forEach((a) => {
-    const serviceName = a.services?.name || 'Coupe & Brushing';
+  filteredAppointments.forEach((a) => {
+    const serviceName = a.services?.name || 'Prestation';
     serviceCounts[serviceName] = (serviceCounts[serviceName] || 0) + 1;
   });
 
@@ -277,11 +313,11 @@ export const AdminPage: React.FC = () => {
     .slice(0, 5);
 
   const barData = {
-    labels: sortedServices.length > 0 ? sortedServices.map((s) => s[0]) : ['Balayage Signature', 'Coupe & Brushing', 'Soin Botox', 'Coupe Homme', 'Patine & Gloss'],
+    labels: sortedServices.length > 0 ? sortedServices.map((s) => s[0]) : ['Aucune prestation sur cette période'],
     datasets: [
       {
-        label: 'Nombre de réservations',
-        data: sortedServices.length > 0 ? sortedServices.map((s) => s[1]) : [18, 14, 9, 7, 5],
+        label: 'Réservations',
+        data: sortedServices.length > 0 ? sortedServices.map((s) => s[1]) : [0],
         backgroundColor: '#1c1917',
         hoverBackgroundColor: '#d97706',
         borderRadius: 8,
@@ -304,13 +340,13 @@ export const AdminPage: React.FC = () => {
     scales: {
       y: {
         beginAtZero: true,
-        ticks: { stepSize: 2, color: '#78716c' },
+        ticks: { stepSize: 1, color: '#78716c' },
         grid: { color: '#f5f5f4' },
       },
       x: {
         ticks: { 
           color: '#78716c',
-          maxRotation: 25,
+          maxRotation: 20,
           minRotation: 0,
           font: { size: 10 }
         },
@@ -319,31 +355,32 @@ export const AdminPage: React.FC = () => {
     },
   };
 
-  // Activité récente : les 5 derniers rendez-vous
-  const recentAppointments = appointments.slice(0, 5);
+  // Activité récente : les 5 derniers rendez-vous de la sélection
+  const recentAppointments = filteredAppointments.slice(0, 6);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8">
       
       {/* En-tête Espace Pro & Administration */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 bg-gradient-to-r from-stone-900 via-stone-850 to-stone-900 text-white p-6 sm:p-8 rounded-3xl shadow-md border border-stone-800">
         <div>
-          <div className="flex items-center gap-2 text-amber-900 font-bold text-xs uppercase tracking-wider">
-            <Shield className="w-4 h-4 text-amber-700" />
-            Portail Administration & Pilotage
+          <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider mb-1">
+            <Shield className="w-4 h-4 text-amber-400" />
+            <span>Portail Direction & Pilotage</span>
           </div>
-          <h1 className="text-3xl font-bold font-serif text-stone-900 mt-1">
-            Tableau de Bord Exécutif Cindy Malorie
+          <h1 className="text-2xl sm:text-4xl font-bold font-serif tracking-tight text-white">
+            Bonjour Cindy TCHAMABE
           </h1>
-          <p className="text-xs sm:text-sm text-stone-600">
-            Suivi des performances commerciales, des réservations à domicile et du chiffre d'affaires en temps réel.
+          <p className="text-xs sm:text-sm text-stone-300 mt-1 max-w-2xl">
+            Suivi en direct de votre activité, de vos prestations à domicile et du chiffre d'affaires réalisé.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        {/* Liens de gestion rapide */}
+        <div className="flex flex-wrap items-center gap-2 pt-2 lg:pt-0">
           <Link
             to="/admin/appointments"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-sm transition-all"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shadow-sm transition-all"
           >
             <Calendar className="w-3.5 h-3.5" />
             <span>Planning</span>
@@ -351,44 +388,38 @@ export const AdminPage: React.FC = () => {
 
           <Link
             to="/admin/clients"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border-2 border-stone-300 hover:border-stone-400 bg-white text-stone-800 text-xs font-bold shadow-sm transition-all"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 text-xs font-bold transition-all"
           >
             <span>👥 Clients</span>
           </Link>
 
           <Link
             to="/admin/services"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border-2 border-stone-300 hover:border-stone-400 bg-white text-stone-800 text-xs font-bold shadow-sm transition-all"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 text-xs font-bold transition-all"
           >
             <span>✂️ Services</span>
           </Link>
 
           <Link
-            to="/admin/staff"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border-2 border-stone-300 hover:border-stone-400 bg-white text-stone-800 text-xs font-bold shadow-sm transition-all"
-          >
-            <span>👤 Coiffeurs</span>
-          </Link>
-
-          <Link
             to="/admin/loyalty"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border-2 border-stone-300 hover:border-stone-400 bg-white text-stone-800 text-xs font-bold shadow-sm transition-all"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 text-xs font-bold transition-all"
           >
             <span>🎁 Fidélité</span>
           </Link>
 
           <Link
             to="/admin/availability"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border-2 border-stone-300 hover:border-stone-400 bg-white text-stone-800 text-xs font-bold shadow-sm transition-all"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 text-xs font-bold transition-all"
           >
-            <Clock className="w-3.5 h-3.5 text-amber-700" />
+            <Clock className="w-3.5 h-3.5 text-amber-400" />
             <span>Horaires</span>
           </Link>
 
           <button
             onClick={fetchAdminData}
             disabled={loading}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-stone-900 text-white hover:bg-stone-800 text-xs font-bold shadow-sm transition-all"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-bold border border-stone-700 transition-all"
+            title="Rafraîchir les données"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             <span>Actualiser</span>
@@ -397,14 +428,77 @@ export const AdminPage: React.FC = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* 1. CARTES KPIS EN HAUT */}
+      {/* SÉLECTEUR DE DATE & PÉRIODE POUR LES KPIS */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-stone-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        
+        {/* Titre & Filtres rapides */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-stone-800 mr-2">
+            <Filter className="w-4 h-4 text-amber-600" />
+            <span>Période des KPI :</span>
+          </div>
+
+          {[
+            { key: 'all', label: 'Tous' },
+            { key: 'today', label: "Aujourd'hui" },
+            { key: 'week', label: '7 Jours' },
+            { key: 'month', label: '30 Jours' },
+            { key: 'year', label: 'Année' },
+            { key: 'custom', label: 'Personnalisée' },
+          ].map((preset) => (
+            <button
+              key={preset.key}
+              onClick={() => setDatePreset(preset.key as DatePreset)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                datePreset === preset.key
+                  ? 'bg-amber-600 text-white shadow-sm'
+                  : 'bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200'
+              }`}
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Date Pickers pour Période Personnalisée */}
+        {datePreset === 'custom' && (
+          <div className="flex items-center gap-2 pt-2 md:pt-0 animate-in fade-in duration-200">
+            <div className="flex items-center gap-1.5 bg-stone-50 px-2.5 py-1.5 rounded-xl border border-stone-300">
+              <CalendarRange className="w-3.5 h-3.5 text-stone-500" />
+              <input
+                type="date"
+                value={customStartDate}
+                onChange={(e) => setCustomStartDate(e.target.value)}
+                className="text-xs bg-transparent text-stone-800 font-semibold focus:outline-none"
+              />
+              <span className="text-xs text-stone-400 font-bold">au</span>
+              <input
+                type="date"
+                value={customEndDate}
+                onChange={(e) => setCustomEndDate(e.target.value)}
+                className="text-xs bg-transparent text-stone-800 font-semibold focus:outline-none"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Badge indicateur du résultat filtré */}
+        <div className="text-right md:text-left text-xs font-semibold text-stone-500">
+          Affichage : <span className="font-bold text-stone-800">{getPeriodLabel()}</span> ({totalAppointments} RDV)
+        </div>
+
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 1. CARTES KPIS */}
+      {/* ========================================================================= */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
         
         {/* KPI 1 : Chiffre d'Affaires Réalisé */}
-        <div className="bg-white rounded-3xl p-6 border-2 border-stone-200 shadow-sm flex flex-col justify-between space-y-3">
+        <div className="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm flex flex-col justify-between space-y-3 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-stone-600 uppercase tracking-wider">CA Réalisé ('completed')</span>
+            <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">CA Réalisé (Terminé)</span>
             <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
               <DollarSign className="w-4 h-4" />
             </div>
@@ -414,35 +508,34 @@ export const AdminPage: React.FC = () => {
               {formatCurrency(totalRevenue)}
             </span>
             <div className="flex items-center justify-between text-[11px] text-stone-500 font-semibold mt-1">
-              <span>Ce mois : {formatCurrency(revenueThisMonth)}</span>
-              <span>Cette sem. : {formatCurrency(revenueThisWeek)}</span>
+              <span>Période : {getPeriodLabel()}</span>
             </div>
           </div>
         </div>
 
-        {/* KPI 2 : Rendez-vous du Jour & Périodes */}
-        <div className="bg-white rounded-3xl p-6 border-2 border-stone-200 shadow-sm flex flex-col justify-between space-y-3">
+        {/* KPI 2 : Rendez-vous du Jour & Total Période */}
+        <div className="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm flex flex-col justify-between space-y-3 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-stone-600 uppercase tracking-wider">Rendez-vous Aujourd'hui</span>
+            <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">Réservations sur Période</span>
             <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center">
               <Calendar className="w-4 h-4" />
             </div>
           </div>
           <div>
             <span className="text-3xl font-serif font-bold text-stone-900">
-              {appointmentsToday} <span className="text-base font-sans text-stone-500 font-normal">RDV</span>
+              {totalAppointments} <span className="text-base font-sans text-stone-500 font-normal">RDV</span>
             </span>
             <div className="flex items-center justify-between text-[11px] text-stone-500 font-semibold mt-1">
-              <span>Cette semaine : <strong>{appointmentsThisWeek}</strong></span>
-              <span>Ce mois : <strong>{appointmentsThisMonth}</strong></span>
+              <span>Aujourd'hui : <strong>{appointmentsToday}</strong></span>
+              <span>Cette sem. : <strong>{appointmentsThisWeek}</strong></span>
             </div>
           </div>
         </div>
 
         {/* KPI 3 : Taux de Transformation / Confirmation */}
-        <div className="bg-white rounded-3xl p-6 border-2 border-stone-200 shadow-sm flex flex-col justify-between space-y-3">
+        <div className="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm flex flex-col justify-between space-y-3 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-stone-600 uppercase tracking-wider">Taux de Transformation</span>
+            <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">Taux de Conversion</span>
             <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center">
               <Percent className="w-4 h-4" />
             </div>
@@ -452,15 +545,15 @@ export const AdminPage: React.FC = () => {
               {conversionRate}%
             </span>
             <p className="text-[11px] text-stone-500 font-semibold mt-1">
-              {validBookings} RDV confirmés sur {totalAppointments || 1} demandes
+              {validBookings} RDV validés sur {totalAppointments || 1} demandes
             </p>
           </div>
         </div>
 
-        {/* KPI 4 : Panier Moyen & Demandes en attente */}
-        <div className="bg-white rounded-3xl p-6 border-2 border-stone-200 shadow-sm flex flex-col justify-between space-y-3">
+        {/* KPI 4 : Panier Moyen */}
+        <div className="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm flex flex-col justify-between space-y-3 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-stone-600 uppercase tracking-wider">Panier Moyen</span>
+            <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">Panier Moyen</span>
             <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center">
               <TrendingUp className="w-4 h-4" />
             </div>
@@ -470,7 +563,7 @@ export const AdminPage: React.FC = () => {
               {formatCurrency(averageCart)}
             </span>
             <p className="text-[11px] text-amber-800 font-bold mt-1">
-              ⏳ {pendingCount} RDV en attente de validation
+              ⏳ {pendingCount} en attente de confirmation
             </p>
           </div>
         </div>
@@ -480,20 +573,20 @@ export const AdminPage: React.FC = () => {
       {/* ========================================================================= */}
       {/* 2. GRAPHIQUES CHART.JS */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
         
-        {/* Graphique 1 : Évolution 30 jours (Line Chart) */}
-        <div className="lg:col-span-8 bg-white rounded-3xl p-6 sm:p-8 border-2 border-stone-200 shadow-sm space-y-4">
+        {/* Graphique 1 : Évolution temporelle (Line Chart) */}
+        <div className="lg:col-span-8 bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-sm space-y-4">
           <div className="flex justify-between items-center">
             <div>
               <h3 className="text-lg font-serif font-bold text-stone-900 flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-amber-700" />
-                Évolution des Réservations (30 Derniers Jours)
+                <TrendingUp className="w-5 h-5 text-amber-600" />
+                Évolution des Réservations
               </h3>
-              <p className="text-xs text-stone-500">Volume quotidien des prises de rendez-vous en ligne</p>
+              <p className="text-xs text-stone-500">Volume quotidien des réservations sur la période sélectionnée</p>
             </div>
-            <span className="text-xs font-bold text-stone-600 bg-stone-100 px-3 py-1 rounded-full">
-              30 Jours
+            <span className="text-xs font-bold text-amber-900 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full">
+              {getPeriodLabel()}
             </span>
           </div>
 
@@ -503,13 +596,13 @@ export const AdminPage: React.FC = () => {
         </div>
 
         {/* Graphique 2 : Répartition par Statut (Donut Chart) */}
-        <div className="lg:col-span-4 bg-white rounded-3xl p-6 sm:p-8 border-2 border-stone-200 shadow-sm space-y-4 flex flex-col justify-between">
+        <div className="lg:col-span-4 bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-sm space-y-4 flex flex-col justify-between">
           <div>
             <h3 className="text-lg font-serif font-bold text-stone-900 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-amber-700" />
+              <Clock className="w-5 h-5 text-amber-600" />
               Répartition par Statut
             </h3>
-            <p className="text-xs text-stone-500">État actuel de tous les rendez-vous</p>
+            <p className="text-xs text-stone-500">État des rendez-vous de la période</p>
           </div>
 
           <div className="h-56 w-full relative flex items-center justify-center">
@@ -523,15 +616,15 @@ export const AdminPage: React.FC = () => {
 
       </div>
 
-      {/* Graphique 3 : Prestations Phares / Répartition par service (Bar Chart) */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-stone-200 shadow-sm space-y-4">
+      {/* Graphique 3 : Prestations les plus demandées (Bar Chart) */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-sm space-y-4">
         <div className="flex justify-between items-center">
           <div>
             <h3 className="text-lg font-serif font-bold text-stone-900 flex items-center gap-2">
-              <Scissors className="w-5 h-5 text-amber-700" />
+              <Scissors className="w-5 h-5 text-amber-600" />
               Prestations les Plus Demandées
             </h3>
-            <p className="text-xs text-stone-500">Volume de réservations par type de prestation</p>
+            <p className="text-xs text-stone-500">Volume de réservations par type de prestation ({getPeriodLabel()})</p>
           </div>
         </div>
 
@@ -541,27 +634,30 @@ export const AdminPage: React.FC = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* 3. ACTIVITÉ RÉCENTE (Les 5 derniers RDV créés/modifiés) */}
+      {/* 3. ACTIVITÉ RÉCENTE SUR LA PÉRIODE SÉLECTIONNÉE */}
       {/* ========================================================================= */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-stone-200 shadow-sm space-y-6">
-        <div className="flex justify-between items-center">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-sm space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h3 className="text-xl font-serif font-bold text-stone-900 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-amber-700" />
-              Activité Récente (5 Derniers Rendez-vous)
+              <Sparkles className="w-5 h-5 text-amber-600" />
+              Rendez-vous de la Période ({recentAppointments.length} affichés)
             </h3>
             <p className="text-xs text-stone-500 mt-0.5">
-              Gestion rapide du statut des réservations en direct
+              Gestion rapide et validation des statuts en temps réel
             </p>
           </div>
 
-          <span className="text-xs font-bold text-amber-900 bg-amber-100 px-3 py-1 rounded-full border border-amber-300">
-            {appointments.length} RDV enregistrés au total
+          <span className="text-xs font-bold text-amber-900 bg-amber-100 px-3 py-1 rounded-full border border-amber-300 self-start sm:self-auto">
+            {totalAppointments} RDV trouvés
           </span>
         </div>
 
         {recentAppointments.length === 0 ? (
-          <p className="text-xs text-stone-500 py-6 text-center">Aucun rendez-vous récent.</p>
+          <div className="py-10 text-center space-y-2">
+            <p className="text-sm font-semibold text-stone-700">Aucun rendez-vous sur cette période sélectionnée.</p>
+            <p className="text-xs text-stone-400">Sélectionnez une autre période ou "Tous" pour voir l'ensemble des réservations.</p>
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
