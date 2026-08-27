@@ -1,19 +1,8 @@
 -- ==============================================================================
--- SUPABASE : ACTIVATION ET POLITIQUES RLS SÉCURISÉES (Row Level Security)
--- Anti-récursion : Utilisation stricte de fonctions SECURITY DEFINER
+-- FIX URGENT : RÉSOLUTION DE LA RÉCURSION INFINIE SUR PROFILES
 -- ==============================================================================
 
--- 1. ACTIVATION DE RLS SUR TOUTES LES TABLES
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.services ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.staff ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.appointments ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.loyalty_transactions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.rewards ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.availability_settings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.blocked_dates ENABLE ROW LEVEL SECURITY;
-
--- 2. FONCTIONS HELPER SECURITY DEFINER (Bypass RLS pour éviter toute récursion)
+-- 1. Redéfinir les fonctions helper avec SECURITY DEFINER et search_path fixé
 CREATE OR REPLACE FUNCTION public.is_admin()
 RETURNS BOOLEAN AS $$
 BEGIN
@@ -34,9 +23,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public STABLE;
 
--- 3. POLITIQUES RLS PAR TABLE
-
--- 3.1 PROFILES
+-- 2. Nettoyer et recréer les politiques sur PROFILES (sans sous-requête récursive)
 DROP POLICY IF EXISTS "Profiles: select own profile or admin" ON public.profiles;
 DROP POLICY IF EXISTS "Profiles: update own profile or admin" ON public.profiles;
 DROP POLICY IF EXISTS "Profiles: insert own profile or admin" ON public.profiles;
@@ -47,7 +34,6 @@ DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 DROP POLICY IF EXISTS "Users can update own profile or admin update all" ON public.profiles;
 DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
 DROP POLICY IF EXISTS "Admins can insert profiles" ON public.profiles;
-DROP POLICY IF EXISTS "Admins can delete profiles" ON public.profiles;
 
 CREATE POLICY "Users can view own profile or staff view all"
     ON public.profiles
@@ -70,16 +56,13 @@ CREATE POLICY "Admins can delete profiles"
     FOR DELETE
     USING (public.is_admin());
 
--- 3.2 SERVICES
+-- 3. Nettoyer et recréer les politiques sur SERVICES
 DROP POLICY IF EXISTS "Services: select public" ON public.services;
 DROP POLICY IF EXISTS "Services: insert admin only" ON public.services;
 DROP POLICY IF EXISTS "Services: update admin only" ON public.services;
 DROP POLICY IF EXISTS "Services: delete admin only" ON public.services;
 DROP POLICY IF EXISTS "Anyone can view active services" ON public.services;
 DROP POLICY IF EXISTS "Only admins can manage services" ON public.services;
-DROP POLICY IF EXISTS "Admins can insert services" ON public.services;
-DROP POLICY IF EXISTS "Admins can update services" ON public.services;
-DROP POLICY IF EXISTS "Admins can delete services" ON public.services;
 
 CREATE POLICY "Anyone can view active services"
     ON public.services
@@ -102,7 +85,7 @@ CREATE POLICY "Admins can delete services"
     FOR DELETE
     USING (public.is_admin());
 
--- 3.3 STAFF
+-- 4. Nettoyer et recréer les politiques sur STAFF
 DROP POLICY IF EXISTS "Staff: select public" ON public.staff;
 DROP POLICY IF EXISTS "Staff: insert admin only" ON public.staff;
 DROP POLICY IF EXISTS "Staff: update admin only" ON public.staff;
@@ -121,7 +104,7 @@ CREATE POLICY "Admins can manage staff"
     USING (public.is_admin())
     WITH CHECK (public.is_admin());
 
--- 3.4 APPOINTMENTS
+-- 5. Nettoyer et recréer les politiques sur APPOINTMENTS
 DROP POLICY IF EXISTS "Appointments: client select own or staff/admin" ON public.appointments;
 DROP POLICY IF EXISTS "Appointments: client insert own" ON public.appointments;
 DROP POLICY IF EXISTS "Appointments: update own or staff/admin" ON public.appointments;
@@ -129,9 +112,7 @@ DROP POLICY IF EXISTS "Appointments: delete admin only" ON public.appointments;
 DROP POLICY IF EXISTS "Clients and staff can view their appointments" ON public.appointments;
 DROP POLICY IF EXISTS "Authenticated users can create appointments for themselves" ON public.appointments;
 DROP POLICY IF EXISTS "Clients can cancel their appointments, staff/admins can update" ON public.appointments;
-DROP POLICY IF EXISTS "Clients and staff can update appointments" ON public.appointments;
 DROP POLICY IF EXISTS "Only admins can delete appointments" ON public.appointments;
-DROP POLICY IF EXISTS "Admins can delete appointments" ON public.appointments;
 
 CREATE POLICY "Clients and staff can view their appointments"
     ON public.appointments
@@ -168,12 +149,11 @@ CREATE POLICY "Admins can delete appointments"
     FOR DELETE
     USING (public.is_admin());
 
--- 3.5 LOYALTY TRANSACTIONS
+-- 6. Nettoyer et recréer les politiques sur LOYALTY_TRANSACTIONS
 DROP POLICY IF EXISTS "Loyalty: client select own" ON public.loyalty_transactions;
 DROP POLICY IF EXISTS "Loyalty: insert system or admin" ON public.loyalty_transactions;
 DROP POLICY IF EXISTS "Clients can view own loyalty transactions" ON public.loyalty_transactions;
 DROP POLICY IF EXISTS "Only admins can insert loyalty transactions" ON public.loyalty_transactions;
-DROP POLICY IF EXISTS "Admins can insert loyalty transactions" ON public.loyalty_transactions;
 
 CREATE POLICY "Clients can view own loyalty transactions"
     ON public.loyalty_transactions
@@ -185,12 +165,11 @@ CREATE POLICY "Admins can insert loyalty transactions"
     FOR INSERT
     WITH CHECK (public.is_admin());
 
--- 3.6 REWARDS
+-- 7. Nettoyer et recréer les politiques sur REWARDS
 DROP POLICY IF EXISTS "Rewards: select public" ON public.rewards;
 DROP POLICY IF EXISTS "Rewards: admin manage" ON public.rewards;
 DROP POLICY IF EXISTS "Anyone can view active rewards" ON public.rewards;
 DROP POLICY IF EXISTS "Only admins can manage rewards" ON public.rewards;
-DROP POLICY IF EXISTS "Admins can manage rewards" ON public.rewards;
 
 CREATE POLICY "Anyone can view active rewards"
     ON public.rewards
@@ -203,7 +182,7 @@ CREATE POLICY "Admins can manage rewards"
     USING (public.is_admin())
     WITH CHECK (public.is_admin());
 
--- 3.7 AVAILABILITY SETTINGS & BLOCKED DATES
+-- 8. Nettoyer et recréer les politiques sur AVAILABILITY & BLOCKED DATES
 DROP POLICY IF EXISTS "Availability: select public" ON public.availability_settings;
 DROP POLICY IF EXISTS "Availability: admin manage" ON public.availability_settings;
 DROP POLICY IF EXISTS "BlockedDates: select public" ON public.blocked_dates;
@@ -212,8 +191,6 @@ DROP POLICY IF EXISTS "Anyone can view active availability settings" ON public.a
 DROP POLICY IF EXISTS "Only admins can manage availability settings" ON public.availability_settings;
 DROP POLICY IF EXISTS "Anyone can view blocked dates" ON public.blocked_dates;
 DROP POLICY IF EXISTS "Only admins can manage blocked dates" ON public.blocked_dates;
-DROP POLICY IF EXISTS "Admins can manage availability settings" ON public.availability_settings;
-DROP POLICY IF EXISTS "Admins can manage blocked dates" ON public.blocked_dates;
 
 CREATE POLICY "Anyone can view active availability settings"
     ON public.availability_settings
