@@ -17,6 +17,8 @@ coverage
 playwright-report
 test-results
 audit-report.json
+supabase/.temp/
+scripts/
 
 # Environment variables
 .env
