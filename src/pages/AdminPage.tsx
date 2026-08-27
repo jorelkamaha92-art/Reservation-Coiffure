@@ -165,14 +165,6 @@ export const AdminPage: React.FC = () => {
     }
   }).length;
 
-  const appointmentsThisWeek = appointments.filter((a) => {
-    try {
-      return isThisWeek(parseISO(a.appointment_date), { weekStartsOn: 1 });
-    } catch {
-      return false;
-    }
-  }).length;
-
   const appointmentsThisMonth = appointments.filter((a) => {
     try {
       return isThisMonth(parseISO(a.appointment_date));
@@ -527,7 +519,7 @@ export const AdminPage: React.FC = () => {
             </span>
             <div className="flex items-center justify-between text-[11px] text-stone-500 font-semibold mt-1">
               <span>Aujourd'hui : <strong>{appointmentsToday}</strong></span>
-              <span>Cette sem. : <strong>{appointmentsThisWeek}</strong></span>
+              <span>Ce mois : <strong>{appointmentsThisMonth}</strong></span>
             </div>
           </div>
         </div>
