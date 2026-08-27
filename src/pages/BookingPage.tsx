@@ -320,10 +320,49 @@ export const BookingPage: React.FC = () => {
       return;
     }
 
+    const [h, m] = selectedTime.split(':').map(Number);
+    const endMinutes = h * 60 + m + selectedService.duration_minutes;
+    const endH = Math.floor(endMinutes / 60);
+    const endM = endMinutes % 60;
+    const endTimeStr = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}:00`;
+
+    // Détection du mode Démo (client fictif local sans compte auth.users)
+    const isDemoRole = Boolean(localStorage.getItem('demo_user_role'));
+    const isDemoId = user.id.startsWith('c0000000-') || user.id.startsWith('a0000000-') || user.id.startsWith('b0000000-') || user.id === 'client-2';
+
+    if (isDemoRole || isDemoId) {
+      const demoAppointment: any = {
+        id: 'd' + Math.random().toString(36).substring(2, 9),
+        client_id: user.id,
+        service_id: validationResult.data.service_id,
+        staff_id: validationResult.data.staff_id || null,
+        appointment_date: dateStr,
+        start_time: startTimeStr,
+        end_time: endTimeStr,
+        status: 'confirmed' as AppointmentStatus,
+        location_type: locationType,
+        location_address: locationType === 'home' ? address : 'Au salon / Studio',
+        notes: notes || null,
+        confirmation_sent: true,
+        reminder_sent: false,
+        services: selectedService,
+        staff: selectedStaff,
+        profiles: profile,
+      };
+
+      try {
+        const stored = JSON.parse(localStorage.getItem('demo_appointments') || '[]');
+        localStorage.setItem('demo_appointments', JSON.stringify([demoAppointment, ...stored]));
+      } catch {}
+
+      setBookingSuccess(demoAppointment);
+      return;
+    }
+
     setSubmitting(true);
 
     try {
-      // 1. Appel de l'Edge Function Supabase create-appointment
+      // 1. Appel de l'Edge Function Supabase create-appointment pour un utilisateur authentifié
       const { data: edgeData, error: edgeError } = await supabase.functions.invoke('create-appointment', {
         body: {
           service_id: validationResult.data.service_id,
@@ -347,13 +386,7 @@ export const BookingPage: React.FC = () => {
         return;
       }
 
-      // 2. Fallback direct client si les Edge Functions locales ne sont pas actives
-      const [h, m] = selectedTime.split(':').map(Number);
-      const endMinutes = h * 60 + m + selectedService.duration_minutes;
-      const endH = Math.floor(endMinutes / 60);
-      const endM = endMinutes % 60;
-      const endTimeStr = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}:00`;
-
+      // 2. Fallback direct client si nécessaire
       const fallbackPayload: any = {
         client_id: user.id,
         service_id: validationResult.data.service_id,

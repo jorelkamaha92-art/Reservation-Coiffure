@@ -28,7 +28,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const getDemoProfile = (role: 'admin' | 'staff' | 'client'): { user: User; profile: Profile } => {
     if (role === 'admin') {
       const p: Profile = {
-        id: 'admin-cindy',
+        id: 'a0000000-0000-0000-0000-000000000001',
         full_name: 'Cindy Malorie (Admin)',
         email: 'cindytchamabekamaha@gmail.com',
         phone: '+39 351 269 7743',
@@ -46,7 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
     } else if (role === 'staff') {
       const p: Profile = {
-        id: 'staff-cindy',
+        id: 'b0000000-0000-0000-0000-000000000001',
         full_name: 'Cindy Malorie (Staff)',
         email: 'staff@cindymalorie.com',
         phone: '+39 351 269 7743',

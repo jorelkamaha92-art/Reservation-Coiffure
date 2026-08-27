@@ -13,7 +13,7 @@ import { format, subDays, addDays } from 'date-fns';
 // 1. SERVICES MOCK (Incluant les 4 modèles signatures de tresses & braids)
 export const MOCK_SERVICES: Service[] = [
   {
-    id: 'srv-braid-1',
+    id: 'a0000000-0000-0000-0000-000000000001',
     name: 'Stitch braid with cross',
     description: 'Tresses stitch haute précision avec motif géométrique en croix sur le dessus. Tracés nets et finitions soignées.',
     duration_minutes: 150, // 2h - 3h
@@ -23,7 +23,7 @@ export const MOCK_SERVICES: Service[] = [
     created_at: '2026-01-01T10:00:00Z',
   },
   {
-    id: 'srv-braid-2',
+    id: 'a0000000-0000-0000-0000-000000000002',
     name: 'Stitch braids',
     description: 'Tresses stitch droites et soignées avec séparations nettes et contours impeccables. Confort et tenue longue durée.',
     duration_minutes: 105, // 1h30 - 2h
@@ -33,7 +33,7 @@ export const MOCK_SERVICES: Service[] = [
     created_at: '2026-01-01T10:00:00Z',
   },
   {
-    id: 'srv-braid-3',
+    id: 'a0000000-0000-0000-0000-000000000003',
     name: 'Knotless braids',
     description: 'Longues tresses sans nœuds fluides et ultra-légères. Mèches rouge vif dégradées, aucune traction sur le cuir chevelu.',
     duration_minutes: 195, // 3h - 3h30
@@ -43,7 +43,7 @@ export const MOCK_SERVICES: Service[] = [
     created_at: '2026-01-01T10:00:00Z',
   },
   {
-    id: 'srv-braid-4',
+    id: 'a0000000-0000-0000-0000-000000000004',
     name: 'Cornrows',
     description: 'Tresses plaquées traditionnelles régulières avec finitions attachées en chignons élégants à l’arrière de la tête.',
     duration_minutes: 90, // 1h - 2h
@@ -53,7 +53,7 @@ export const MOCK_SERVICES: Service[] = [
     created_at: '2026-01-01T10:00:00Z',
   },
   {
-    id: 'srv-5',
+    id: 'a0000000-0000-0000-0000-000000000005',
     name: 'Coupe Femme & Brushing',
     description: 'Diagnostic personnalisé, shampoing traitant, coupe sur-mesure et brushing éclat haute tenue.',
     duration_minutes: 60,
@@ -63,7 +63,7 @@ export const MOCK_SERVICES: Service[] = [
     created_at: '2026-01-01T10:00:00Z',
   },
   {
-    id: 'srv-6',
+    id: 'a0000000-0000-0000-0000-000000000006',
     name: 'Coupe Homme & Soin Barbe',
     description: 'Coupe aux ciseaux et tondeuse, finitions rasoir, taille de barbe et serviette chaude.',
     duration_minutes: 45,
@@ -73,7 +73,7 @@ export const MOCK_SERVICES: Service[] = [
     created_at: '2026-01-01T10:00:00Z',
   },
   {
-    id: 'srv-7',
+    id: 'a0000000-0000-0000-0000-000000000007',
     name: 'Balayage Signature & Patine',
     description: 'Éclaircissement naturel sur-mesure avec patine neutralisante et masque reconstructeur.',
     duration_minutes: 120,
@@ -83,7 +83,7 @@ export const MOCK_SERVICES: Service[] = [
     created_at: '2026-01-01T10:00:00Z',
   },
   {
-    id: 'srv-8',
+    id: 'a0000000-0000-0000-0000-000000000008',
     name: 'Soin Botox Capillaire & Massage',
     description: 'Soin reconstructeur profond à la kératine et acide hyaluronique pour un effet miroir.',
     duration_minutes: 60,
@@ -97,8 +97,8 @@ export const MOCK_SERVICES: Service[] = [
 // 2. STAFF MOCK (Cindy Malorie)
 export const MOCK_STAFF: Staff[] = [
   {
-    id: 'staff-cindy',
-    user_id: 'user-cindy',
+    id: 'b0000000-0000-0000-0000-000000000001',
+    user_id: 'a0000000-0000-0000-0000-000000000001',
     full_name: 'Cindy Malorie',
     specialty: 'Spécialiste Braids, Tresses Artistiques & Soins Capillaires',
     bio: 'Artisan coiffeuse styliste à Pavia (Via Francana 10) et à domicile en Lombardie. Plus de 100K abonnés sur TikTok (@cindymalorie).',
@@ -108,10 +108,10 @@ export const MOCK_STAFF: Staff[] = [
   },
 ];
 
-// 3. CLIENTS PROFILES MOCK
+// 3. CLIENTS PROFILES MOCK (avec UUIDs valides)
 export const MOCK_CLIENTS: Profile[] = [
   {
-    id: 'client-1',
+    id: 'c0000000-0000-0000-0000-000000000001',
     full_name: 'Matteo Gambino',
     email: 'matteo.gambino@gmail.com',
     phone: '+39 340 1234567',
@@ -128,7 +128,7 @@ export const MOCK_CLIENTS: Profile[] = [
     updated_at: '2026-02-15T11:00:00Z',
   },
   {
-    id: 'client-2',
+    id: 'c0000000-0000-0000-0000-000000000002',
     full_name: 'Chiara Bellini',
     email: 'chiara.bellini@yahoo.it',
     phone: '+39 349 7654321',
@@ -146,7 +146,7 @@ export const MOCK_CLIENTS: Profile[] = [
     updated_at: '2026-02-20T16:40:00Z',
   },
   {
-    id: 'client-3',
+    id: 'c0000000-0000-0000-0000-000000000003',
     full_name: 'Lorenzo Rossi',
     email: 'lorenzo.rossi@outlook.it',
     phone: '+39 338 9876543',
@@ -163,7 +163,7 @@ export const MOCK_CLIENTS: Profile[] = [
     updated_at: '2026-02-10T10:30:00Z',
   },
   {
-    id: 'client-4',
+    id: 'c0000000-0000-0000-0000-000000000004',
     full_name: 'Sofia Conti',
     email: 'sofia.conti@gmail.com',
     phone: '+39 333 4567890',
@@ -181,7 +181,7 @@ export const MOCK_CLIENTS: Profile[] = [
     updated_at: '2026-02-22T18:30:00Z',
   },
   {
-    id: 'client-5',
+    id: 'c0000000-0000-0000-0000-000000000005',
     full_name: 'Alessandro Ferrari',
     email: 'a.ferrari@libero.it',
     phone: '+39 320 8765432',
@@ -198,7 +198,7 @@ export const MOCK_CLIENTS: Profile[] = [
     updated_at: '2025-11-20T12:00:00Z',
   },
   {
-    id: 'client-6',
+    id: 'c0000000-0000-0000-0000-000000000006',
     full_name: 'Elena Moretti',
     email: 'elena.moretti@gmail.com',
     phone: '+39 347 1122334',
@@ -224,13 +224,13 @@ const yesterdayStr = format(subDays(new Date(), 1), 'yyyy-MM-dd');
 const lastWeekStr = format(subDays(new Date(), 7), 'yyyy-MM-dd');
 const twoWeeksAgoStr = format(subDays(new Date(), 14), 'yyyy-MM-dd');
 
-// 4. APPOINTMENTS MOCK
+// 4. APPOINTMENTS MOCK (avec UUIDs valides)
 export const MOCK_APPOINTMENTS: AppointmentWithDetails[] = [
   {
-    id: 'app-1',
-    client_id: 'client-1',
-    service_id: 'srv-braid-1',
-    staff_id: 'staff-cindy',
+    id: 'd0000000-0000-0000-0000-000000000001',
+    client_id: 'c0000000-0000-0000-0000-000000000001',
+    service_id: 'a0000000-0000-0000-0000-000000000001',
+    staff_id: 'b0000000-0000-0000-0000-000000000001',
     appointment_date: todayStr,
     start_time: '10:00:00',
     end_time: '12:30:00',
@@ -248,10 +248,10 @@ export const MOCK_APPOINTMENTS: AppointmentWithDetails[] = [
     profiles: MOCK_CLIENTS[0],
   },
   {
-    id: 'app-2',
-    client_id: 'client-2',
-    service_id: 'srv-braid-3',
-    staff_id: 'staff-cindy',
+    id: 'd0000000-0000-0000-0000-000000000002',
+    client_id: 'c0000000-0000-0000-0000-000000000002',
+    service_id: 'a0000000-0000-0000-0000-000000000003',
+    staff_id: 'b0000000-0000-0000-0000-000000000001',
     appointment_date: tomorrowStr,
     start_time: '14:00:00',
     end_time: '17:15:00',
@@ -269,10 +269,10 @@ export const MOCK_APPOINTMENTS: AppointmentWithDetails[] = [
     profiles: MOCK_CLIENTS[1],
   },
   {
-    id: 'app-3',
-    client_id: 'client-3',
-    service_id: 'srv-braid-4',
-    staff_id: 'staff-cindy',
+    id: 'd0000000-0000-0000-0000-000000000003',
+    client_id: 'c0000000-0000-0000-0000-000000000003',
+    service_id: 'a0000000-0000-0000-0000-000000000004',
+    staff_id: 'b0000000-0000-0000-0000-000000000001',
     appointment_date: in3DaysStr,
     start_time: '09:30:00',
     end_time: '11:00:00',
@@ -290,10 +290,10 @@ export const MOCK_APPOINTMENTS: AppointmentWithDetails[] = [
     profiles: MOCK_CLIENTS[2],
   },
   {
-    id: 'app-4',
-    client_id: 'client-4',
-    service_id: 'srv-7',
-    staff_id: 'staff-cindy',
+    id: 'd0000000-0000-0000-0000-000000000004',
+    client_id: 'c0000000-0000-0000-0000-000000000004',
+    service_id: 'a0000000-0000-0000-0000-000000000007',
+    staff_id: 'b0000000-0000-0000-0000-000000000001',
     appointment_date: in5DaysStr,
     start_time: '15:00:00',
     end_time: '17:00:00',
@@ -311,10 +311,10 @@ export const MOCK_APPOINTMENTS: AppointmentWithDetails[] = [
     profiles: MOCK_CLIENTS[3],
   },
   {
-    id: 'app-5',
-    client_id: 'client-6',
-    service_id: 'srv-8',
-    staff_id: 'staff-cindy',
+    id: 'd0000000-0000-0000-0000-000000000005',
+    client_id: 'c0000000-0000-0000-0000-000000000006',
+    service_id: 'a0000000-0000-0000-0000-000000000008',
+    staff_id: 'b0000000-0000-0000-0000-000000000001',
     appointment_date: yesterdayStr,
     start_time: '11:00:00',
     end_time: '12:00:00',
@@ -332,10 +332,10 @@ export const MOCK_APPOINTMENTS: AppointmentWithDetails[] = [
     profiles: MOCK_CLIENTS[5],
   },
   {
-    id: 'app-6',
-    client_id: 'client-1',
-    service_id: 'srv-braid-2',
-    staff_id: 'staff-cindy',
+    id: 'd0000000-0000-0000-0000-000000000006',
+    client_id: 'c0000000-0000-0000-0000-000000000001',
+    service_id: 'a0000000-0000-0000-0000-000000000002',
+    staff_id: 'b0000000-0000-0000-0000-000000000001',
     appointment_date: lastWeekStr,
     start_time: '16:00:00',
     end_time: '17:45:00',
@@ -353,10 +353,10 @@ export const MOCK_APPOINTMENTS: AppointmentWithDetails[] = [
     profiles: MOCK_CLIENTS[0],
   },
   {
-    id: 'app-7',
-    client_id: 'client-5',
-    service_id: 'srv-6',
-    staff_id: 'staff-cindy',
+    id: 'd0000000-0000-0000-0000-000000000007',
+    client_id: 'c0000000-0000-0000-0000-000000000005',
+    service_id: 'a0000000-0000-0000-0000-000000000006',
+    staff_id: 'b0000000-0000-0000-0000-000000000001',
     appointment_date: twoWeeksAgoStr,
     start_time: '14:30:00',
     end_time: '15:15:00',
@@ -374,10 +374,10 @@ export const MOCK_APPOINTMENTS: AppointmentWithDetails[] = [
     profiles: MOCK_CLIENTS[4],
   },
   {
-    id: 'app-8',
-    client_id: 'client-3',
-    service_id: 'srv-braid-1',
-    staff_id: 'staff-cindy',
+    id: 'd0000000-0000-0000-0000-000000000008',
+    client_id: 'c0000000-0000-0000-0000-000000000003',
+    service_id: 'a0000000-0000-0000-0000-000000000001',
+    staff_id: 'b0000000-0000-0000-0000-000000000001',
     appointment_date: subDays(new Date(), 4).toISOString().split('T')[0],
     start_time: '10:00:00',
     end_time: '12:30:00',
@@ -399,7 +399,7 @@ export const MOCK_APPOINTMENTS: AppointmentWithDetails[] = [
 // 5. REWARDS MOCK
 export const MOCK_REWARDS: Reward[] = [
   {
-    id: 'rew-1',
+    id: 'e0000000-0000-0000-0000-000000000001',
     name: 'Soin hydratant express offert',
     description: 'Un soin réparateur express aux huiles végétales offert lors de votre prochain rendez-vous.',
     points_required: 50,
@@ -407,7 +407,7 @@ export const MOCK_REWARDS: Reward[] = [
     created_at: '2026-01-01T10:00:00Z',
   },
   {
-    id: 'rew-2',
+    id: 'e0000000-0000-0000-0000-000000000002',
     name: 'Remise immédiate de 10 €',
     description: 'Bénéficiez de 10 € de déduction sur la prestation ou le modèle de tresse de votre choix.',
     points_required: 100,
@@ -415,7 +415,7 @@ export const MOCK_REWARDS: Reward[] = [
     created_at: '2026-01-01T10:00:00Z',
   },
   {
-    id: 'rew-3',
+    id: 'e0000000-0000-0000-0000-000000000003',
     name: 'Shampoing traitant & Brushing Offert',
     description: 'Un rituel de lavage et brushing éclat offert en studio ou à domicile.',
     points_required: 150,
@@ -423,7 +423,7 @@ export const MOCK_REWARDS: Reward[] = [
     created_at: '2026-01-01T10:00:00Z',
   },
   {
-    id: 'rew-4',
+    id: 'e0000000-0000-0000-0000-000000000004',
     name: 'Prestation complète offerte',
     description: 'Votre coupe, coiffure tressée ou soin botox entièrement offert.',
     points_required: 250,
@@ -435,38 +435,38 @@ export const MOCK_REWARDS: Reward[] = [
 // 6. LOYALTY TRANSACTIONS MOCK
 export const MOCK_LOYALTY_TRANSACTIONS: (LoyaltyTransaction & { profiles?: Profile })[] = [
   {
-    id: 'tx-1',
-    client_id: 'client-2',
+    id: 'f0000000-0000-0000-0000-000000000001',
+    client_id: 'c0000000-0000-0000-0000-000000000002',
     points: 95,
     transaction_type: 'earned',
-    appointment_id: 'app-2',
+    appointment_id: 'd0000000-0000-0000-0000-000000000002',
     description: 'Points gagnés : Knotless braids (95 €)',
     created_at: format(subDays(new Date(), 2), "yyyy-MM-dd'T'HH:mm:ss'Z'"),
     profiles: MOCK_CLIENTS[1],
   },
   {
-    id: 'tx-2',
-    client_id: 'client-6',
+    id: 'f0000000-0000-0000-0000-000000000002',
+    client_id: 'c0000000-0000-0000-0000-000000000006',
     points: 55,
     transaction_type: 'earned',
-    appointment_id: 'app-5',
+    appointment_id: 'd0000000-0000-0000-0000-000000000005',
     description: 'Points gagnés : Soin Botox Capillaire & Massage (55 €)',
     created_at: format(subDays(new Date(), 3), "yyyy-MM-dd'T'HH:mm:ss'Z'"),
     profiles: MOCK_CLIENTS[5],
   },
   {
-    id: 'tx-3',
-    client_id: 'client-1',
+    id: 'f0000000-0000-0000-0000-000000000003',
+    client_id: 'c0000000-0000-0000-0000-000000000001',
     points: 60,
     transaction_type: 'earned',
-    appointment_id: 'app-6',
+    appointment_id: 'd0000000-0000-0000-0000-000000000006',
     description: 'Points gagnés : Stitch braids (60 €)',
     created_at: format(subDays(new Date(), 7), "yyyy-MM-dd'T'HH:mm:ss'Z'"),
     profiles: MOCK_CLIENTS[0],
   },
   {
-    id: 'tx-4',
-    client_id: 'client-2',
+    id: 'f0000000-0000-0000-0000-000000000004',
+    client_id: 'c0000000-0000-0000-0000-000000000002',
     points: -100,
     transaction_type: 'redeemed',
     appointment_id: null,
@@ -475,8 +475,8 @@ export const MOCK_LOYALTY_TRANSACTIONS: (LoyaltyTransaction & { profiles?: Profi
     profiles: MOCK_CLIENTS[1],
   },
   {
-    id: 'tx-5',
-    client_id: 'client-6',
+    id: 'f0000000-0000-0000-0000-000000000005',
+    client_id: 'c0000000-0000-0000-0000-000000000006',
     points: 50,
     transaction_type: 'earned',
     appointment_id: null,
@@ -488,26 +488,26 @@ export const MOCK_LOYALTY_TRANSACTIONS: (LoyaltyTransaction & { profiles?: Profi
 
 // 7. AVAILABILITY SETTINGS MOCK
 export const MOCK_AVAILABILITY: AvailabilitySetting[] = [
-  { id: 'av-1', day_of_week: 1, start_time: '09:00:00', end_time: '19:00:00', is_active: true }, // Lundi
-  { id: 'av-2', day_of_week: 2, start_time: '09:00:00', end_time: '19:00:00', is_active: true }, // Mardi
-  { id: 'av-3', day_of_week: 3, start_time: '09:00:00', end_time: '19:00:00', is_active: true }, // Mercredi
-  { id: 'av-4', day_of_week: 4, start_time: '09:00:00', end_time: '19:00:00', is_active: true }, // Jeudi
-  { id: 'av-5', day_of_week: 5, start_time: '09:00:00', end_time: '19:00:00', is_active: true }, // Vendredi
-  { id: 'av-6', day_of_week: 6, start_time: '09:00:00', end_time: '18:00:00', is_active: true }, // Samedi
-  { id: 'av-0', day_of_week: 0, start_time: '10:00:00', end_time: '14:00:00', is_active: false }, // Dimanche
+  { id: '10000000-0000-0000-0000-000000000001', day_of_week: 1, start_time: '09:00:00', end_time: '19:00:00', is_active: true }, // Lundi
+  { id: '10000000-0000-0000-0000-000000000002', day_of_week: 2, start_time: '09:00:00', end_time: '19:00:00', is_active: true }, // Mardi
+  { id: '10000000-0000-0000-0000-000000000003', day_of_week: 3, start_time: '09:00:00', end_time: '19:00:00', is_active: true }, // Mercredi
+  { id: '10000000-0000-0000-0000-000000000004', day_of_week: 4, start_time: '09:00:00', end_time: '19:00:00', is_active: true }, // Jeudi
+  { id: '10000000-0000-0000-0000-000000000005', day_of_week: 5, start_time: '09:00:00', end_time: '19:00:00', is_active: true }, // Vendredi
+  { id: '10000000-0000-0000-0000-000000000006', day_of_week: 6, start_time: '09:00:00', end_time: '18:00:00', is_active: true }, // Samedi
+  { id: '10000000-0000-0000-0000-000000000000', day_of_week: 0, start_time: '10:00:00', end_time: '14:00:00', is_active: false }, // Dimanche
 ];
 
 // 8. BLOCKED DATES MOCK
 export const MOCK_BLOCKED_DATES: BlockedDate[] = [
   {
-    id: 'blk-1',
+    id: '20000000-0000-0000-0000-000000000001',
     date: format(addDays(new Date(), 14), 'yyyy-MM-dd'),
     reason: 'Formation Masterclass Braids & Tresses Artistiques',
     is_full_day: true,
     created_at: '2026-01-01T10:00:00Z',
   },
   {
-    id: 'blk-2',
+    id: '20000000-0000-0000-0000-000000000002',
     date: format(addDays(new Date(), 21), 'yyyy-MM-dd'),
     reason: 'Jour férié (Festa Nazionale)',
     is_full_day: true,

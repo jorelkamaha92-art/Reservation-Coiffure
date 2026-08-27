@@ -87,25 +87,19 @@ export const LoginPage: React.FC = () => {
           return;
         }
 
-        // Mode Démo / Fallback si identifiants admin saisis
-        if (email.toLowerCase() === 'cindytchamabekamaha@gmail.com') {
-          handleQuickDemoLogin('admin');
-          return;
-        }
-
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (error) {
-          // Fallback test si Supabase auth n'est pas encore synchronisé
-          if (email.includes('admin')) {
-            handleQuickDemoLogin('admin');
-          } else {
-            handleQuickDemoLogin('client');
-          }
+          setErrorMsg(error.message === 'Invalid login credentials' 
+            ? 'Email ou mot de passe incorrect. Vous pouvez créer un compte ou utiliser le bouton Test 1-Clic ci-dessous.' 
+            : error.message);
         } else {
+          try {
+            localStorage.removeItem('demo_user_role');
+          } catch {}
           navigate(from, { replace: true });
         }
       }
