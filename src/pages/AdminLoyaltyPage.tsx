@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Profile, Reward, LoyaltyTransaction } from '../types';
-import { MOCK_REWARDS, MOCK_CLIENTS, MOCK_LOYALTY_TRANSACTIONS } from '../lib/mockData';
+import { MOCK_REWARDS } from '../lib/mockData';
 import { formatDateFr } from '../utils/date';
 import {
   Award,

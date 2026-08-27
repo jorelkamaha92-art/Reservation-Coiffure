@@ -19,16 +19,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --include=optional
 
       - name: Run Unit Tests
-        run: npm test
+        run: npm run test
 
       - name: Build Project
         run: npm run build
         env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://tnjaovxgfusliistcxcz.supabase.co' }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'sb_publishable_eq-a8LQ8LUnSP0naApU0rw_eP9cKGdH' }}
+          VITE_SUPABASE_URL: "https://tnjaovxgfusliistcxcz.supabase.co"
+          VITE_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRuamFvdnhnZnVzbGlpc3RjeGN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3OTUyOTIsImV4cCI6MjEwMzM3MTI5Mn0.8JpY50jUV1QLifzw6CGB0NLqydbDK1ZE0jhR1KT9ZmQ"

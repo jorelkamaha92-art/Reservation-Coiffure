@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import type { AvailabilitySetting, BlockedDate } from '../types';
-import { MOCK_BLOCKED_DATES } from '../lib/mockData';
 import { formatDateFr } from '../utils/date';
 import {
   Clock,

@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import type { AppointmentWithDetails, AppointmentStatus } from '../types';
-import { MOCK_APPOINTMENTS } from '../lib/mockData';
 import { formatDateFr, formatTimeFr } from '../utils/date';
 import { formatCurrency, getStatusBadgeColor, getStatusLabel } from '../utils/format';
 import {

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Profile, AppointmentWithDetails, LoyaltyTransaction } from '../types';
-import { MOCK_CLIENTS, MOCK_APPOINTMENTS, MOCK_LOYALTY_TRANSACTIONS } from '../lib/mockData';
 import { formatDateFr } from '../utils/date';
 import { formatCurrency, getStatusBadgeColor, getStatusLabel } from '../utils/format';
 import {

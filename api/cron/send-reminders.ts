@@ -1,5 +1,3 @@
-import type { Request, Response } from 'express';
-
 /**
  * Endpoint Vercel Cron Job : /api/cron/send-reminders
  * 

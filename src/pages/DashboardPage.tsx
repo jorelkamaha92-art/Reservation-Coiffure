@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import type { AppointmentWithDetails, Reward, LoyaltyTransaction } from '../types';
-import { MOCK_APPOINTMENTS, MOCK_REWARDS, MOCK_LOYALTY_TRANSACTIONS } from '../lib/mockData';
+import { MOCK_REWARDS } from '../lib/mockData';
 import { formatDateFr, formatTimeFr } from '../utils/date';
 import { formatCurrency, getStatusBadgeColor, getStatusLabel } from '../utils/format';
 import { 
