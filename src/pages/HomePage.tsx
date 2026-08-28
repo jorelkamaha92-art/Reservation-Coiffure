@@ -12,11 +12,9 @@ import {
   Heart,
   ShieldCheck,
   HelpCircle,
-  Video,
   ChevronRight
 } from 'lucide-react';
 import { formatCurrency } from '../utils/format';
-import { TikTokFeed } from '../components/TikTokFeed';
 
 export const HomePage: React.FC = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -147,8 +145,8 @@ export const HomePage: React.FC = () => {
                   rel="noopener noreferrer"
                   className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-md"
                 >
-                  <Video className="w-4 h-4 text-white" />
-                  Voir sur TikTok (@cindymalorie)
+                  <Sparkles className="w-4 h-4 text-white" />
+                  Suivre sur TikTok (@cindymalorie)
                 </a>
               </div>
 
@@ -338,20 +336,6 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* 4. SECTION VIDÉOS TIKTOK */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        <div className="text-center max-w-2xl mx-auto space-y-2">
-          <span className="text-xs font-bold text-rose-600 uppercase tracking-wider">TikTok Spotlight</span>
-          <h2 className="text-3xl sm:text-4xl font-serif font-bold text-stone-900">
-            Vidéos & Transformations Réelles
-          </h2>
-          <p className="text-stone-600 text-sm">
-            Retrouvez les vidéos en direct de nos prestations partagées sur le compte officiel <strong>@cindymalorie</strong>.
-          </p>
-        </div>
-
-        <TikTokFeed />
-      </section>
 
       {/* 5. AVIS CLIENTS */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
