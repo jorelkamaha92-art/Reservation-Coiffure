@@ -92,8 +92,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Cindy Malorie administratrice principale
-  const isAdmin = profile?.role === 'admin' || user?.email?.toLowerCase() === 'cindytchamabekamaha@gmail.com';
+  // Liste des administrateurs officiels
+  const ADMIN_EMAILS = ['cindytchamabekamaha@gmail.com', 'kamahayvan@gmail.com'];
+  const isAdmin = profile?.role === 'admin' || (user?.email ? ADMIN_EMAILS.includes(user.email.toLowerCase()) : false);
   const isStaff = profile?.role === 'staff' || isAdmin;
 
   return (

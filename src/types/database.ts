@@ -6,6 +6,9 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
+export type PaymentStatus = 'pending' | 'deposit_paid' | 'paid' | 'refunded';
+export type PaymentType = 'deposit_15' | 'full' | 'on_site';
+
 export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
 export type AppointmentLocationType = 'home' | 'salon';
 export type LoyaltyTransactionType = 'earned' | 'redeemed';
@@ -129,6 +132,12 @@ export interface Database {
           location_type: AppointmentLocationType;
           location_address: string | null;
           notes: string | null;
+          payment_status?: PaymentStatus;
+          payment_type?: PaymentType;
+          amount_paid?: number;
+          deposit_amount?: number;
+          remaining_balance?: number;
+          stripe_payment_id?: string | null;
           confirmation_sent: boolean;
           reminder_sent: boolean;
           reminder_scheduled_at: string | null;
@@ -147,6 +156,12 @@ export interface Database {
           location_type?: AppointmentLocationType;
           location_address?: string | null;
           notes?: string | null;
+          payment_status?: PaymentStatus;
+          payment_type?: PaymentType;
+          amount_paid?: number;
+          deposit_amount?: number;
+          remaining_balance?: number;
+          stripe_payment_id?: string | null;
           confirmation_sent?: boolean;
           reminder_sent?: boolean;
           reminder_scheduled_at?: string | null;
@@ -163,6 +178,12 @@ export interface Database {
           location_type?: AppointmentLocationType;
           location_address?: string | null;
           notes?: string | null;
+          payment_status?: PaymentStatus;
+          payment_type?: PaymentType;
+          amount_paid?: number;
+          deposit_amount?: number;
+          remaining_balance?: number;
+          stripe_payment_id?: string | null;
           confirmation_sent?: boolean;
           reminder_sent?: boolean;
           reminder_scheduled_at?: string | null;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { format, startOfToday, addDays, getDay } from 'date-fns';
@@ -19,7 +19,8 @@ import {
   CheckCircle2, 
   ShieldCheck,
   Lock,
-  Award
+  Award,
+  CreditCard
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
@@ -34,6 +35,7 @@ const STANDARD_TIME_SLOTS = [
 
 export const BookingPage: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { user, profile } = useAuth();
 
   // Workflow Steps : 1: Service, 2: Coiffeur, 3: Date & Heure, 4: Lieu, 5: Récapitulatif
@@ -376,7 +378,11 @@ export const BookingPage: React.FC = () => {
       });
 
       if (!edgeError && edgeData?.success) {
-        setBookingSuccess(edgeData.appointment || true);
+        const app = edgeData.appointment;
+        setBookingSuccess(app || true);
+        if (app?.id) {
+          navigate(`/paiement/${app.id}`, { state: { appointment: { ...app, services: selectedService, staff: selectedStaff } } });
+        }
         return;
       }
 
@@ -411,7 +417,11 @@ export const BookingPage: React.FC = () => {
       if (directError) {
         setErrorMsg('Erreur lors de la réservation : ' + directError.message);
       } else {
-        setBookingSuccess(insertedData || true);
+        const created = insertedData;
+        setBookingSuccess(created || true);
+        if (created?.id) {
+          navigate(`/paiement/${created.id}`, { state: { appointment: { ...created, services: selectedService, staff: selectedStaff } } });
+        }
       }
     } catch (err: any) {
       setErrorMsg(err.message || 'Une erreur inattendue est survenue.');
@@ -425,6 +435,7 @@ export const BookingPage: React.FC = () => {
 
   // Écran de succès
   if (bookingSuccess) {
+    const successAppId = (bookingSuccess as any)?.id;
     return (
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center space-y-8 animate-fadeIn">
         <div className="w-20 h-20 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-lg border-2 border-emerald-300">
@@ -437,7 +448,7 @@ export const BookingPage: React.FC = () => {
             Merci pour votre confiance !
           </h1>
           <p className="text-stone-700 text-base max-w-md mx-auto">
-            Votre demande de rendez-vous a bien été transmise à <strong>Cindy Malorie</strong>. Un email de confirmation récapitulatif vous a été envoyé.
+            Votre rendez-vous a bien été enregistré. Vous pouvez maintenant sécuriser votre créneau en réglant l'acompte de 15% ou la totalité.
           </p>
         </div>
 
@@ -472,18 +483,22 @@ export const BookingPage: React.FC = () => {
         </div>
 
         <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
+          {successAppId && (
+            <Link
+              to={`/paiement/${successAppId}`}
+              state={{ appointment: bookingSuccess }}
+              className="px-6 py-3.5 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2"
+            >
+              <CreditCard className="w-4 h-4" />
+              Procéder au paiement (Acompte 15% ou Totalité)
+            </Link>
+          )}
           <Link
             to="/dashboard"
             className="px-6 py-3.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2"
           >
             <CalendarIcon className="w-4 h-4 text-amber-400" />
             Accéder à mon espace client
-          </Link>
-          <Link
-            to="/"
-            className="px-6 py-3.5 rounded-xl bg-white hover:bg-stone-50 text-stone-800 border-2 border-stone-200 font-bold text-xs transition-all flex items-center justify-center"
-          >
-            Retour à l'accueil
           </Link>
         </div>
       </div>

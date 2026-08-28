@@ -9,6 +9,7 @@ import { GalleryPage } from './pages/GalleryPage';
 import { AboutPage } from './pages/AboutPage';
 import { ContactPage } from './pages/ContactPage';
 import { BookingPage } from './pages/BookingPage';
+import { PaymentPage } from './pages/PaymentPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { AdminPage } from './pages/AdminPage';
 import { AdminAppointmentsPage } from './pages/AdminAppointmentsPage';
@@ -36,6 +37,8 @@ export const App: React.FC = () => {
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/booking" element={<BookingPage />} />
               <Route path="/reservation" element={<BookingPage />} />
+              <Route path="/payment/:appointmentId" element={<PaymentPage />} />
+              <Route path="/paiement/:appointmentId" element={<PaymentPage />} />
 
               {/* 2. Routes d'authentification (réservées aux non-connectés) */}
               <Route
